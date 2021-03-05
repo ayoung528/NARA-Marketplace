@@ -1,0 +1,2137 @@
+<?
+
+if($_GET[value] != ""){
+
+	$temp = $_GET[value];
+
+	$clrstr = "";
+
+	$str = preg_replace("/\s+/","",$temp); //모든 공백 제거
+
+	$bbb = "";
+
+	$strTok = explode(',' , $str);
+
+ 
+
+	$strResult = "";
+
+	for($i = 0; $i < count($strTok); $i++){
+
+		//검색어 필터링   
+
+		//$check = preg_replace('/[a-zA-Z]/',"",$strTok[$i]); //영어 필터링
+
+		$check = preg_replace('/[0-9]/',"",$strTok[$i]); //숫자 필터링
+
+		$check = preg_replace('/[!@#$%^&*.<>(){}:+=-_\/;?~`|]/',"",$check); //특수문자 필터링
+
+ 
+
+		//공백이 아닐 때만 인코딩, 추가
+
+		if (strlen($check) > 0) {
+
+			$bbb = $bbb.urlencode(iconv('UTF-8','EUC-KR',$check)).",";
+
+			if($i+1 == count($strTok)){
+
+				$strResult = $strResult.$check;
+
+			}else{
+
+				$strResult = $strResult.$check.",";
+
+			}
+
+			$clrstr = $clrstr.$check.",";
+
+		}
+
+	}
+
+	//마지막 문자 가져오기
+
+	$str = $strResult;
+
+	$a   = strlen($str) - 1;    
+
+	$c   = substr($str,$a,1); //마지막 문자
+
+	
+
+	if($c == ","){ //마지막 문자가 콤마(,)이면 
+
+		$strResult = substr($strResult, 0, -1); // 마지막 문자 제거
+
+	}
+
+	$ccc = $bbb;
+
+	setcookie("searchText", "{$strResult}", time() + 86400 * 30, "/"); //한달동안 '청주시,공주시'를 searchText 변수(?) 쿠키에 저장
+
+	$_COOKIE["searchText"] = $strResult; //searchText 변수에 '청주시,공주시'를 저장 (이전 값이 나와서 쿠키불러와서 다시 저장)
+
+}
+
+ 
+
+if($_GET[job_type] != ""){
+
+	setcookie("jobType", "{$_GET[job_type]}", time() + 86400 * 30, "/");
+
+	$_COOKIE["jobType"] = $_GET[job_type];
+
+}
+
+?>
+
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8"/>
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1"/>
+
+<title>나라장터 입찰 검색</title>
+
+<style>
+
+html {
+
+	height: 100%;
+
+}
+
+ 
+
+body {
+
+	height: 90%;
+
+}
+
+ 
+
+#title-text {
+
+	font-size: 25px;
+
+	color: #00008B;
+
+	font-weight: 700;
+
+	text-align: center;
+
+	margin: auto; !important;
+
+	margin-bottom: 10px;
+
+	padding: 5px;
+
+}
+
+ 
+
+.box-container {
+
+	text-align: center;
+
+}
+
+ 
+
+.footer{
+
+	display: inline-block;
+
+	text-align: center;
+
+	margin: auto;
+
+}
+
+/*width가 1500px 이하일 때 적용*/
+
+@media (max-width: 1500px) {
+
+	.box-container {
+
+		display: block;
+
+		text-align: center;
+
+	}
+
+ 
+
+	.box-right{
+
+		display: block;
+
+		text-align: center;		
+
+	}
+
+ 
+
+	.content {
+
+		height: 100%;
+
+		margin-top: 20px;
+
+	}
+
+}
+
+/*width가 1500px 이상일 때 적용*/
+
+@media (min-width: 1500px) {
+
+	.content {
+
+		width: 100%;
+
+		height: 100%;
+
+		margin:0 auto !important;
+
+		margin-top: 20px;
+
+	}
+
+ 
+
+	.box-right {
+
+		width:100%;
+
+		text-align: center;
+
+		
+
+	}
+
+}
+
+ 
+
+.mid-text {
+
+	text-align: right;
+
+	padding-right: 10px;
+
+	padding-top: 10px;
+
+}
+
+ 
+
+#form {
+
+	
+
+	height: 35px;
+
+	width: 100%;
+
+	border: 2px solid #1b5ac2;
+
+	background: #ffffff;
+
+	display: inline-block;
+
+	float: right;
+
+	flex: 2.5;
+
+}
+
+ 
+
+.container {
+
+	margin: auto; !important;
+
+	margin-top: 30px;
+
+	height: 40px;
+
+	width: 300px;
+
+	text-align: center;
+
+}
+
+ 
+
+#input {
+
+	font-size: 12px;
+
+	width: calc(100% - 70px);
+
+	padding: 10px;
+
+	border: 0px;
+
+	outline: none;
+
+	float: left;
+
+}
+
+ 
+
+#bt {
+
+	width: 50px;
+
+	height: 35px;
+
+	border: 0px;
+
+	background: #1b5ac2;
+
+	outline: none;
+
+	float: right;
+
+	color: #ffffff;
+
+	cursor: pointer;
+
+}
+
+ 
+
+#notice-text {
+
+	font-size: 12px;
+
+	color: #483D8B;
+
+	font-weight: 700;
+
+	font-family: gothic;
+
+	text-align: center;
+
+	margin: auto; !important;
+
+	margin-bottom: 10px;
+
+	padding: 5px;
+
+}
+
+ 
+
+.text {
+
+	font-size: 16px;
+
+	font-weight: 700;
+
+	display: inline;
+
+}
+
+ 
+
+#type-list {
+
+	margin: auto;
+
+	width: auto;
+
+	flex: 0.5;
+
+}
+
+ 
+
+#type {
+
+	margin: auto;
+
+	flex: 0.5;
+
+	text-align: center;
+
+	width: 8px;
+
+}
+
+ 
+
+#job-type {
+
+	width: 50px;
+
+	height: 30px;
+
+}
+
+ 
+
+#name {
+
+	flex: 0.5;
+
+	margin: auto;
+
+	text-align: center;
+
+}
+
+ 
+
+#date {
+
+	margin: auto;
+
+	text-align: center;
+
+	width: auto;
+
+}
+
+ 
+
+#date-type {
+
+	margin: auto;
+
+	width: auto;
+
+	height: 30px;
+
+}
+
+ 
+
+#date-select {
+
+	margin: auto;
+
+}
+
+ 
+
+#date-radio {
+
+	margin: auto;
+
+	width: auto;
+
+	font-size: 13px;
+
+}
+
+ 
+
+#frameBox {
+
+	border: 1px;
+
+	padding: 0;
+
+	margin: 0 auto;
+
+	width:100%;
+
+}
+
+ 
+
+#frame-container {
+
+	width: 100%;
+
+	height: 100%;
+
+	margin: 0;
+
+	min-width: 320px;
+
+	padding: 0;
+
+}
+
+ 
+
+.date-label:hover {
+
+	cursor: pointer;
+
+}
+
+ 
+
+.tablink {
+
+	background-color: #E6E6FA;
+
+	float: left;
+
+	border: none;
+
+	outline: none;
+
+	cursor: pointer;
+
+	padding: 5px 0;
+
+	font-size: 17x;
+
+	font-weight: 700;
+
+	width: 90px;
+
+	text-align: center;
+
+}
+
+ 
+
+.tabs:hover {
+
+	background-color: #E6E6FA;
+
+	border: 1px solid #696969;
+
+}
+
+ 
+
+.tabcontent {
+
+	display: none;
+
+	width: 100%;
+
+	height: 100%;
+
+	text-align: center;
+
+	margin:0 auto;
+
+}
+
+ 
+
+#frame-container .active {
+
+  background-color: #E6E6FA;
+
+  border: 2px solid #6495ED;
+
+}
+
+ 
+
+.topright {
+
+	font-size: 20px;
+
+	float: top;
+
+}
+
+ 
+
+.topright:hover {
+
+	color: red;
+
+	cursor: pointer;
+
+}
+
+ 
+
+.tabs {
+
+	display: inline-block;
+
+	
+
+}
+
+ 
+
+.tab-bar {
+
+	display: block;
+
+	width: 100%;
+
+	background-color: #E6E6FA;
+
+	margin: auto;
+
+}
+
+ 
+
+.frm {
+
+	border: none;
+
+	text-align: center;
+
+	margin: 0 auto;
+
+	min-width: 300px;
+
+	height: 890px;
+
+}
+
+ 
+
+#list-text {
+
+	font-size: 13px;
+
+	margin-bottom: 11px;
+
+}
+
+ 
+
+.footer{
+
+	display: block;
+
+	text-align: right;
+
+	width:100%;
+
+	padding-bottom: 10px;
+
+}
+
+</style>
+
+<!--날짜 스크립트-->
+
+<script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+
+<script type="text/javascript" >
+
+//오늘 날짜
+
+var x = "";
+
+var today = new Date();
+
+var day = today.getDate();
+
+var month = today.getMonth()+1; 
+
+var year = today.getFullYear();
+
+ 
+
+if (day < 10)
+
+{
+
+	day = '0'+day;
+
+}
+
+ 
+
+if (month < 10)
+
+{
+
+	month = '0'+month;
+
+}
+
+//한달 전 날짜
+
+var lastDay = new Date();
+
+var last = lastDay.getTime() - (30*24*60*60*1000);
+
+lastDay.setTime(last);
+
+var lastYear = lastDay.getFullYear();
+
+var lastMonth = lastDay.getMonth()+1;
+
+var lastDate = lastDay.getDate();
+
+ 
+
+if (lastDate < 10)
+
+{
+
+	lastDate = '0'+lastDate;
+
+}
+
+ 
+
+if (lastMonth < 10)
+
+{
+
+	lastMonth = '0'+lastMonth;
+
+}
+
+ 
+
+$(document).ready(function() {
+
+ 
+
+	if("<?=$_GET[from_date]?>" != ""){ //from_date 값이 들어오면
+
+		document.getElementById("from_date").value = "<?=$_GET[from_date]?>"; //들어온 값으로 입력되게 함
+
+		document.getElementById("to_date").value = "<?=$_GET[to_date]?>";
+
+	}else{ //안 들어오면, '공고일'일 때라는 거니깐
+
+		document.getElementById("from_date").value=lastYear+'-'+lastMonth+'-'+lastDate; //한달 전 날짜로 초기화
+
+		document.getElementById("to_date").value=year+'-'+month+'-'+day; //오늘 날짜로 초기화
+
+	}
+
+	
+
+	//'최근 1개월'에 체크돼있게 구현
+
+	//공고일이거나, 아무 선택 안 했을 때
+
+	if("<?=$_GET[date_type]?>" == "" || "<?=$_GET[date_type]?>" == "공고일"){
+
+		document.getElementById("1month").checked = true; //최근 1개월에 check
+
+ 
+
+	}else{ //개찰일일 때
+
+		var bid = document.getElementsByClassName("after");
+
+		var open = document.getElementsByClassName("recently");
+
+		var ele = document.getElementsByName("chk_date"); 
+
+		
+
+		// '이후 1개월' 보이기 && '최근 1개월' 숨기기
+
+		for (i = 0; i < bid.length; i++)
+
+		{
+
+			bid[i].style.display = "inline-block";
+
+			open[i].style.display = "none";
+
+		}	
+
+	}
+
+ 
+
+	if("<?=$_GET[chk_date]?>" == "1"){ //1개월일 때 check
+
+		document.getElementById("1month").checked = true;
+
+	}else if("<?=$_GET[chk_date]?>" == "3"){ //3개월일 때 check
+
+		document.getElementById("3month").checked = true;
+
+	}else if("<?=$_GET[chk_date]?>" == "6"){ //6개월일 때 check
+
+		document.getElementById("6month").checked = true;
+
+	}
+
+ 
+
+});
+
+ 
+
+//공고일과 개찰일을 눌렀을 때의 이벤트발생
+
+//공고일 -> 한달전 날짜, 오늘 날짜로 초기화
+
+//개찰일 -> 2주전 날짜, 2주후 날짜로 초기화
+
+function dateOpen() {
+
+	var bid, open, i, ele;
+
+ 
+
+	x = document.getElementById("date-type").value;
+
+	bid = document.getElementsByClassName("after");
+
+	open = document.getElementsByClassName("recently");
+
+	ele = document.getElementsByName("chk_date"); 
+
+ 
+
+	if (x == '개찰일')
+
+	{
+
+		// '이후 1개월' 보이기 && '최근 1개월' 숨기기
+
+		for (i = 0; i < bid.length; i++)
+
+		{
+
+			bid[i].style.display = "inline-block";
+
+			open[i].style.display = "none";
+
+		}
+
+ 
+
+		// 날짜 초기화
+
+		var l = new Date();
+
+		var la = l.getTime() - (14*24*60*60*1000);
+
+		l.setTime(la);
+
+		var lY = l.getFullYear();
+
+		var lM = l.getMonth()+1;
+
+		var lD = l.getDate();
+
+		
+
+		if (lD < 10)
+
+		{
+
+			lD = '0'+lD;
+
+		}
+
+		if (lM < 10)
+
+		{
+
+			lM = '0'+lM;
+
+		}
+
+ 
+
+		var aftDay = new Date();
+
+		var aft = l.getTime() + (30*24*60*60*1000);
+
+		aftDay.setTime(aft);
+
+		var aftYear = aftDay.getFullYear();
+
+		var aftMonth = aftDay.getMonth()+1;
+
+		var aftDate = aftDay.getDate();
+
+ 
+
+		if (aftDate < 10)
+
+		{
+
+			aftDate = '0'+aftDate;
+
+		}
+
+		if (aftMonth < 10)
+
+		{
+
+			aftMonth = '0'+aftMonth;
+
+		}
+
+		document.getElementById("from_date").value=lY+'-'+lM+'-'+lD;
+
+		document.getElementById("to_date").value=aftYear+'-'+aftMonth+'-'+aftDate;
+
+ 
+
+		for (i = 0; i < ele.length; i++) //개찰일일 땐, radio 버튼 check 안 함
+
+		{
+
+			ele[i].checked = false;
+
+		}
+
+	}
+
+	else { //공고일일떄
+
+		// '최근 1개월' 보이기 && '이후 1개월' 숨기기
+
+		for (i = 0; i < bid.length; i++)
+
+		{
+
+			bid[i].style.display = "none";
+
+			open[i].style.display = "inline-block";
+
+		}
+
+ 
+
+		// 날짜 초기화
+
+		var tt = new Date();
+
+		var dd = today.getDate();
+
+		var mm = today.getMonth()+1;
+
+		var yy = today.getFullYear();
+
+		
+
+		if (dd < 10)
+
+		{
+
+			dd = '0'+dd;
+
+		}
+
+		if (mm < 10)
+
+		{
+
+			mm = '0'+mm;
+
+		}
+
+ 
+
+		var lastDay = new Date();
+
+		var last = lastDay.getTime() - (30*24*60*60*1000);
+
+		lastDay.setTime(last);
+
+		var lastYear = lastDay.getFullYear();
+
+		var lastMonth = lastDay.getMonth()+1;
+
+		var lastDate = lastDay.getDate();
+
+ 
+
+		if (lastDate < 10)
+
+		{
+
+			lastDate = '0'+lastDate;
+
+		}
+
+		if (lastMonth < 10)
+
+		{
+
+			lastMonth = '0'+lastMonth;
+
+		}
+
+ 
+
+		document.getElementById("from_date").value=lastYear+'-'+lastMonth+'-'+lastDate;
+
+		document.getElementById("to_date").value=yy+'-'+mm+'-'+dd;
+
+ 
+
+		//1개월에만 radio 버튼 check
+
+		for (i = 0; i < ele.length; i++)
+
+		{
+
+			if(i == 0){
+
+				ele[i].checked = true;
+
+			}else{
+
+				ele[i].checked = false;
+
+			}
+
+			
+
+		}
+
+	}
+
+	
+
+}
+
+//최근 1개월,3개월,6개월일 때 날짜 변경
+
+//이후 1개월,3개월,6개월일 때 날짜 변경
+
+function dateChange(id) {
+
+	var str = id.substring(0,1);
+
+ 
+
+	x = document.getElementById("date-type").value;
+
+	bid = document.getElementsByClassName("after");
+
+	open = document.getElementsByClassName("recently");
+
+	ele = document.getElementsByName("chk_date"); 
+
+ 
+
+	if (x == '개찰일')
+
+	{
+
+		if (str == 1)
+
+		{
+
+			//한달 후 날짜
+
+			var l = new Date();
+
+			var la = l.getTime() + (30*24*60*60*1000);
+
+			l.setTime(la);
+
+			var lY = l.getFullYear();
+
+			var lM = l.getMonth()+1;
+
+			var lD = l.getDate();
+
+ 
+
+			if (lD < 10)
+
+			{
+
+				lD = '0'+lD;
+
+			}
+
+ 
+
+			if (lM < 10)
+
+			{
+
+				lM = '0'+lM;
+
+			}
+
+			document.getElementById("to_date").value=lY+'-'+lM+'-'+lD;
+
+		}
+
+		else if (str == 3)
+
+		{
+
+			//3달 후 날짜
+
+			var l = new Date();
+
+			var la = l.getTime() + (90*24*60*60*1000);
+
+			l.setTime(la);
+
+			var lY = l.getFullYear();
+
+			var lM = l.getMonth()+1;
+
+			var lD = l.getDate();
+
+ 
+
+			if (lD < 10)
+
+			{
+
+				lD = '0'+lD;
+
+			}
+
+ 
+
+			if (lM < 10)
+
+			{
+
+				lM = '0'+lM;
+
+			}
+
+			document.getElementById("to_date").value=lY+'-'+lM+'-'+lD;
+
+		}
+
+		else
+
+		{
+
+			//6달 후 날짜
+
+			var l = new Date();
+
+			var la = l.getTime() + (180*24*60*60*1000);
+
+			l.setTime(la);
+
+			var lY = l.getFullYear();
+
+			var lM = l.getMonth()+1;
+
+			var lD = l.getDate();
+
+ 
+
+			if (lD < 10)
+
+			{
+
+				lD = '0'+lD;
+
+			}
+
+ 
+
+			if (lM < 10)
+
+			{
+
+				lM = '0'+lM;
+
+			}
+
+			document.getElementById("to_date").value=lY+'-'+lM+'-'+lD;
+
+		}
+
+		document.getElementById("from_date").value=year+'-'+month+'-'+day;
+
+	}
+
+	else {
+
+		if (str == 1)
+
+		{
+
+			//한달 전 날짜
+
+			var l = new Date();
+
+			var la = l.getTime() - (30*24*60*60*1000);
+
+			l.setTime(la);
+
+			var lY = l.getFullYear();
+
+			var lM = l.getMonth()+1;
+
+			var lD = l.getDate();
+
+ 
+
+			if (lD < 10)
+
+			{
+
+				lD = '0'+lD;
+
+			}
+
+ 
+
+			if (lM < 10)
+
+			{
+
+				lM = '0'+lM;
+
+			}
+
+			document.getElementById("from_date").value=lY+'-'+lM+'-'+lD;
+
+		}
+
+		else if (str == 3)
+
+		{
+
+			//3달 전 날짜
+
+			var l = new Date();
+
+			var la = l.getTime() - (90*24*60*60*1000);
+
+			l.setTime(la);
+
+			var lY = l.getFullYear();
+
+			var lM = l.getMonth()+1;
+
+			var lD = l.getDate();
+
+ 
+
+			if (lD < 10)
+
+			{
+
+				lD = '0'+lD;
+
+			}
+
+ 
+
+			if (lM < 10)
+
+			{
+
+				lM = '0'+lM;
+
+			}
+
+			document.getElementById("from_date").value=lY+'-'+lM+'-'+lD;
+
+		}
+
+		else
+
+		{
+
+			//6달 전 날짜
+
+			var l = new Date();
+
+			var la = l.getTime() - (180*24*60*60*1000);
+
+			l.setTime(la);
+
+			var lY = l.getFullYear();
+
+			var lM = l.getMonth()+1;
+
+			var lD = l.getDate();
+
+ 
+
+			if (lD < 10)
+
+			{
+
+				lD = '0'+lD;
+
+			}
+
+ 
+
+			if (lM < 10)
+
+			{
+
+				lM = '0'+lM;
+
+			}
+
+			document.getElementById("from_date").value=lY+'-'+lM+'-'+lD;
+
+		}
+
+		document.getElementById("to_date").value=year+'-'+month+'-'+day;
+
+	}
+
+}
+
+</script>
+
+ 
+
+<?
+
+$taskClCd = $_GET[job_type]; // 전체, 용역, 공사, ...
+
+$searchDt = $_GET[date_type]; // 공고일(1), 개찰일(2)
+
+$fromBid = $_GET[from_date]; // 2019/08/01
+
+$toBid = $_GET[to_date]; // 2019/08/31
+
+ 
+
+//들어온 값들을 URL에 넣기위해 알맞은 글자로 변환
+
+$fromBid = str_replace("-","/",$fromBid);
+
+$toBid = str_replace("-","/",$toBid);
+
+$searchDt = str_replace("공고일","1",$searchDt);
+
+$searchDt = str_replace("개찰일","2",$searchDt);
+
+$fromOpenBid = "";
+
+$toOpenBid = "";
+
+ 
+
+//공고일이면 fromBid,toBid에 개찰일이면 fromOpenBid,toOpenBid에 대입
+
+if (strcmp($searchDt,"1")) {
+
+	$fromOpenBid = $fromBid;
+
+	$toOpenBid = $toBid;
+
+	$fromBid = "";
+
+	$toBid = "";
+
+}
+
+ 
+
+$taskClCd = str_replace("article","1",$taskClCd); //물품
+
+$taskClCd = str_replace("corpor","3",$taskClCd); //공사
+
+$taskClCd = str_replace("service","5",$taskClCd); //용역
+
+$taskClCd = str_replace("lease","6",$taskClCd); //리스
+
+$taskClCd = str_replace("fore","2",$taskClCd); //외자
+
+$taskClCd = str_replace("reser","11",$taskClCd); //비축
+
+$taskClCd = str_replace("etc","4",$taskClCd); //기타
+
+$taskClCd = str_replace("private","20",$taskClCd); //민간
+
+?>
+
+ 
+
+<!--탭과 iframe 스크립트-->
+
+<script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+
+<script type="text/javascript">
+
+var arrayString = "<?=$ccc?>";
+
+var splitUrl = arrayString.split(','); //#C%D%~,
+
+ 
+
+var t = "<?=$clrstr?>";
+
+var splitKor = t.split(','); //청주시 공주시,
+
+ 
+
+var searchDtType = "<?=$searchDt?>";
+
+var fromBidDt = "<?=$fromBid?>";
+
+var toBidDt = "<?=$toBid?>";
+
+var taskClCds = "<?=$taskClCd?>";
+
+var fromOpenBidDt = "<?=$fromOpenBid?>";
+
+var toOpenBidDt = "<?=$toOpenBid?>";
+
+ 
+
+if (splitKor[0].length > 1)
+
+{
+
+	var i, j, tab_cls;
+
+	window.onload = function() {
+
+		// str 존재하면 tab 이름 변경.
+
+		// splitKor[i]를 url 변수로 해서 넘김.
+
+		for (i = 0; i < splitKor.length-1 ; i++)
+
+		{
+
+			// splitKor[i]에 따른 서로 다른 iframe 주소.
+
+			document.getElementById("ifrm"+i).src = "http://www.g2b.go.kr:8101/ep/tbid/tbidList.do?searchType=1&bidSearchType=1&taskClCds="+taskClCds+"&bidNm="+splitUrl[i]+"&searchDtType="+searchDtType+"&fromBidDt="+fromBidDt+"&toBidDt="+toBidDt+"&fromOpenBidDt="+fromOpenBidDt+"&toOpenBidDt="+toOpenBidDt+"&radOrgan=1&instNm=&instSearchRangeType=&refNo=&area=&areaNm=&industry=&industryCd=&budget=&budgetCompare=UP&detailPrdnmNo=&detailPrdnm=&procmntReqNo=&intbidYn=®Yn=Y&recordCountPerPage=10";
+
+			// 탭 이름 변경
+
+			document.getElementById(i+"_tab").value = splitKor[i];
+
+		}
+
+ 
+
+		//이름이 변경되지 않은 탭들은 display:none으로 숨김
+
+		for (j = i; j < 10 ; j++)
+
+		{
+
+			tab_cls = searchClass(j+"_tab");
+
+			tab_cls[0].style.display = "none";
+
+		}
+
+	}
+
+}
+
+else {
+
+	//입력 들어온 값이 없으면 탭은 전체 숨김.
+
+	window.onload = function() {
+
+		var cls = document.getElementsByClassName("tab-bar");
+
+		for (i = 0; i < cls.length; i++)
+
+		{
+
+			cls[0].style.display = "none";
+
+		}
+
+	}
+
+}
+
+</script>
+
+ 
+
+</head>
+
+<body>
+
+	<div class="container">
+
+		<div><a id="title-text" href="index.php" style="text-decoration:none">나라장터 입찰 검색</a>
+
+		</div>
+
+	</div>
+
+	<div class="content">
+
+		<div style="width:833px; margin:0 auto; height:100%;">
+
+			<form action = "./index.php" method="get" id="container-form">
+
+				<div id="box">
+
+					<div id="notice-text">
+
+						07:00 ~ 20:00 사이에는 검색기간을 공고게시일자 최대 6개월, 개찰일자 최대 6개월 까지 가능합니다.(토,일요일 및 공휴일 제외)
+
+					</div>
+
+					<div class="box-container">
+
+						<div class="box-right">
+
+							<div class="list" id="list-1">
+
+								<div style="border:0px solid #ff0000; width:100%; margin-bottom:10px;">
+
+									<table cellpadding=0 cellspacing=0 width=100%>
+
+										<tr>
+
+											<td style="text-align:right;">
+
+												<section class="text" id="type">업무구분</section>
+
+											</td>
+
+											<td style="text-align:left; padding-left:20px;">
+
+												<div class="text" id="type-list">
+
+													<select name="job_type" id="job-type">
+
+														<option value="">전체</option>
+
+														<option class="jobclass" id="service" value="service" <? if($_COOKIE[jobType] == "service"){ echo "selected"; } ?>  >용역</option>
+
+														<option class="jobclass" id="corpor" value="corpor" <? if($_COOKIE[jobType] == "corpor"){ echo "selected"; } ?> >공사</option>
+
+														<option class="jobclass" id="article" value="article" <? if($_COOKIE[jobType] == "article"){ echo "selected"; } ?> >물품</option>
+
+														<option class="jobclass" id="lease" value="lease" <? if($_COOKIE[jobType] == "lease"){ echo "selected"; } ?> >리스</option>
+
+														<option class="jobclass" id="fore" value="fore" <? if($_COOKIE[jobType] == "fore"){ echo "selected"; } ?> >외자</option>
+
+														<option class="jobclass" id="reser" value="reser" <? if($_COOKIE[jobType] == "reser"){ echo "selected"; } ?> >비축</option>
+
+														<option class="jobclass" id="etc" value="etc" <? if($_COOKIE[jobType] == "etc"){ echo "selected"; } ?> >기타</option>
+
+														<option class="jobclass" id="private" value="private" <? if($_COOKIE[jobType] == "private"){ echo "selected"; } ?> >민간</option>
+
+													</select>
+
+												</div>
+
+											</td>
+
+											<td>
+
+												<section class="text" id="name">공고명</section>
+
+											</td>
+
+											<td>
+
+												<div id="form">
+
+													<input id="input" name="value" type="text" value="<?=$_COOKIE['searchText']?>" placeholder="검색어 입력 (최대 10개까지 입력 가능)">
+
+													<input type="submit" value="검색" id="bt">
+
+												</div>
+
+											</td>
+
+										</tr>								
+
+									</table>
+
+									<table cellpadding=0 cellspacing=0 width=100%>
+
+										<tr>
+
+											<td>
+
+												<div class="mid-text">
+
+													<section id="list-text" style="text-decoration:underline;">※ 쉼표( , )로 구분하여 10개 단어 검색 가능 (특수문자와 숫자 제외)</section>
+
+												</div>
+
+											</td>
+
+										</tr>
+
+									</table>
+
+									<table cellpadding=0 cellspacing=0 width=100%>
+
+										<tr>
+
+											<td>
+
+												<section class="text" id="date">공고/개찰일</section>
+
+											</td>
+
+											<td>
+
+												<div class="text" id="date-list">
+
+													<select name="date_type" id="date-type" onchange="dateOpen();">
+
+														<option value="공고일" <? if($_GET[date_type] == "공고일"){ echo "selected"; } ?>>공고일</option>
+
+														<option value="개찰일" <? if($_GET[date_type] == "개찰일"){ echo "selected"; } ?>>개찰일</option>
+
+													</select>
+
+												</div>
+
+											</td>
+
+											<td>
+
+												<div id="date-select">
+
+													<input type="date" value="2019-08-01" id="from_date" name="from_date">
+
+													<input type="date" value="2019-08-31" id="to_date" name="to_date">
+
+												</div>
+
+											</td>
+
+											<td>
+
+												<div id="date-radio">
+
+													<input type="radio" name="chk_date" id="1month" value="1" onclick="dateChange(id);" />
+
+													<label class="date-label recently" for="1month" >최근 1개월</label>
+
+													<label class="date-label after" for="1month" style="display:none">이후 1개월</label>
+
+													<input type="radio" name="chk_date" id="3month" value="3" onclick="dateChange(id);" />
+
+													<label class="date-label recently" for="3month">최근 3개월</label>
+
+													<label class="date-label after" for="3month" style="display:none">이후 3개월</label>
+
+													<input type="radio" name="chk_date" id="6month" value="6" onclick="dateChange(id);" />
+
+													<label class="date-label recently" for="6month">최근 6개월</label>
+
+													<label class="date-label after" for="6month" style="display:none">이후 6개월</label>
+
+												</div>
+
+											</td>
+
+										</tr>								
+
+									</table>
+
+								</div>
+
+							</div>
+
+						</div>
+
+					</div>
+
+				</div>
+
+			</form>
+
+			<div id="frameBox">
+
+				<div id="frame-container">
+
+					<div class="tab-bar">
+
+					<div class="tabs first" id="defaultOpen">
+
+						<input type="button"  id="0_tab" class="tablink" value="tab1" onclick="openTab('one','first','ifrm0')">
+
+						<span onclick="this.parentElement.style.display='none';remove('one','first');" class="topright">&times;</span>
+
+					</div>
+
+					<div class="tabs second">
+
+						<input type="button" id="1_tab" class="tablink" value="tab2" onclick="openTab('two','second','ifrm1')">
+
+						<span onclick="this.parentElement.style.display='none';remove('two','second')" class="topright">&times;</span>
+
+					</div>
+
+					<div class="tabs third">
+
+						<input type="button" id="2_tab" class="tablink" value="tab3" onclick="openTab('thr','third','ifrm2')">
+
+						<span onclick="this.parentElement.style.display='none';remove('thr','third')" class="topright">&times;</span>
+
+					</div>
+
+					<div class="tabs fourth">
+
+						<input type="button" id="3_tab" class="tablink" value="tab4" onclick="openTab('fou','fourth','ifrm3')">
+
+						<span onclick="this.parentElement.style.display='none';remove('fou','fourth')" class="topright">&times;</span>
+
+					</div>
+
+					<div class="tabs fifth">
+
+						<input type="button" id="4_tab" class="tablink" value="tab5" onclick="openTab('fiv','fifth','ifrm4')">
+
+						<span onclick="this.parentElement.style.display='none';remove('fiv','fifth')" class="topright">&times;</span>
+
+					</div>
+
+					<div class="tabs sixth">
+
+						<input type="button" id="5_tab" class="tablink" value="tab6" onclick="openTab('six','sixth','ifrm5')">
+
+						<span onclick="this.parentElement.style.display='none';remove('six','sixth');" class="topright">&times;</span>
+
+					</div>
+
+					<div class="tabs seventh">
+
+						<input type="button" id="6_tab" class="tablink" value="tab7" onclick="openTab('seven','seventh','ifrm6')">
+
+						<span onclick="this.parentElement.style.display='none';remove('seven','seventh');" class="topright">&times;</span>
+
+					</div>
+
+					<div class="tabs eighth">
+
+						<input type="button" id="7_tab" class="tablink" value="tab8" onclick="openTab('eight','eighth','ifrm7')">
+
+						<span onclick="this.parentElement.style.display='none';remove('eight','eighth');" class="topright">&times;</span>
+
+					</div>
+
+					<div class="tabs ninth">
+
+						<input type="button" id="8_tab" class="tablink" value="tab9" onclick="openTab('nine','ninth','ifrm8')">
+
+						<span onclick="this.parentElement.style.display='none';remove('nine','ninth');" class="topright">&times;</span>
+
+					</div>
+
+					<div class="tabs tenth">
+
+						<input type="button" id="9_tab" class="tablink" value="tab10" onclick="openTab('ten','tenth','ifrm9')">
+
+						<span onclick="this.parentElement.style.display='none';remove('ten','tenth');" class="topright">&times;</span>
+
+					</div>
+
+					</div>
+
+ 
+
+					<div id="one" class="tabcontent" style="display: block">
+
+						<iframe class="frm" id="ifrm0" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+					<div id="two" class="tabcontent">
+
+						<iframe class="frm" id="ifrm1" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+					<div id="thr" class="tabcontent">
+
+						<iframe class="frm" id="ifrm2" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+					<div id="fou" class="tabcontent">
+
+						<iframe class="frm" id="ifrm3" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+					<div id="fiv" class="tabcontent">
+
+						<iframe class="frm" id="ifrm4" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+					<div id="six" class="tabcontent">
+
+						<iframe class="frm" id="ifrm5" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+					<div id="seven" class="tabcontent">
+
+						<iframe class="frm" id="ifrm6" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+					<div id="eight" class="tabcontent">
+
+						<iframe class="frm" id="ifrm7" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+					<div id="nine" class="tabcontent">
+
+						<iframe class="frm" id="ifrm8" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+					<div id="ten" class="tabcontent">
+
+						<iframe class="frm" id="ifrm9" src="about:blank" width="100%" height="100%"></iframe>
+
+					</div>
+
+				</div>
+
+			</div>
+
+			<div class="footer">
+
+				<div id="image">
+
+					<img src="logo.gif">
+
+				</div>
+
+			</div>
+
+		</div>
+
+	</div>
+
+</body>
+
+<!--탭과 id,class찾는 스크립트-->
+
+<script type="text/javascript">
+
+//탭 누를 때
+
+function openTab(pageName, clicked_id, frm_id) {
+
+	var i, tabcontent, tablinks, tabclass, iframe_height;
+
+	tabcontent = document.getElementsByClassName("tabcontent");
+
+	for (i = 0; i < tabcontent.length; i++ )
+
+	{
+
+		//탭 내용 display:none 으로 초기화
+
+		tabcontent[i].style.display = "none";
+
+	}
+
+ 
+
+	tablinks = document.getElementsByClassName("tabs");
+
+	for (i = 0; i < tablinks.length; i++ )
+
+	{
+
+		//탭의 클래스에서 active가 있으면 지움
+
+		tablinks[i].className = tablinks[i].className.replace(" active", "");
+
+	}
+
+ 
+
+	//해당되는 탭 내용 display:block 으로 보여줌
+
+	document.getElementById(pageName).style.display = "block";
+
+	
+
+	tabclass = document.getElementsByClassName(clicked_id);
+
+	for (i = 0; i < tabclass.length; i++ )
+
+	{
+
+		//해당되는 탭에 active 클래스를 추가
+
+		tabclass[i].className += ' active';
+
+	}
+
+}
+
+ 
+
+//탭의 active 초기값
+
+//defaultOpen을 가지고 있는 요소에 active클래스 추가
+
+var t = document.getElementById("defaultOpen");
+
+t.classList.add('active');
+
+ 
+
+//탭 지울 때
+
+function remove(clicked_id, tab_class) {
+
+	var i, tabcontent, tabclass, alltab, getId;
+
+	tabcontent = document.getElementById(clicked_id);
+
+	tabclass = document.getElementsByClassName(tab_class);
+
+	alltab = document.getElementsByClassName("tabs");
+
+ 
+
+	//active한 탭일 때
+
+	if ((tabclass[0].className).search(' active') != -1)
+
+	{
+
+		for (i = 0; i < alltab.length; i++)
+
+		{
+
+			//현재 보여지는 탭 중에서
+
+			if (alltab[i].style.display != "none")
+
+			{
+
+				//하나만 active 클래스 추가하고 braek
+
+				alltab[i].className += ' active';
+
+				getId = searchId(alltab[i].className);
+
+				break;
+
+			}
+
+		}
+
+		//지운 탭 내용 display:none, active 클래스 추가한 탭 내용 display:block
+
+		tabcontent.style.display = "none";
+
+		getId.style.display = "block";
+
+	}
+
+	else {
+
+		//active한 탭이 아닐 때는 탭 내용 display:none
+
+		tabcontent.style.display = "none";
+
+	}
+
+}
+
+ 
+
+//탭의 class에 해당하는 탭 내용의 id 찾기
+
+function searchId(cls_name) {
+
+	var str;
+
+	if (cls_name.search(" first") != -1)
+
+	{
+
+		str = "one";
+
+	}
+
+	else if (cls_name.search(" second") != -1)
+
+	{
+
+		str = "two";
+
+	}
+
+	else if (cls_name.search(" third") != -1)
+
+	{
+
+		str = "thr";
+
+	}
+
+	else if (cls_name.search(" fourth") != -1)
+
+	{
+
+		str = "fou";
+
+	}
+
+	else if (cls_name.search(" fifth") != -1)
+
+	{
+
+		str = "fiv";
+
+	}
+
+	else if (cls_name.search(" sixth") != -1)
+
+	{
+
+		str = "six";
+
+	}
+
+	else if (cls_name.search(" seventh") != -1)
+
+	{
+
+		str = "seven";
+
+	}
+
+	else if (cls_name.search(" eighth") != -1)
+
+	{
+
+		str = "eight";
+
+	}
+
+	else if (cls_name.search(" ninth") != -1)
+
+	{
+
+		str = "nine";
+
+	}
+
+	else {
+
+		str = "ten";
+
+	}
+
+	return document.getElementById(str);
+
+}
+
+ 
+
+//탭 id에 해당하는 class 찾기
+
+function searchClass(id_name) {
+
+	var str;
+
+	if (id_name.search("0") != -1)
+
+	{
+
+		str = " first";
+
+	}
+
+	else if (id_name.search("1") != -1)
+
+	{
+
+		str = " second";
+
+	}
+
+	else if (id_name.search("2") != -1)
+
+	{
+
+		str = " third";
+
+	}
+
+	else if (id_name.search("3") != -1)
+
+	{
+
+		str = " fourth";
+
+	}
+
+	else if (id_name.search("4") != -1)
+
+	{
+
+		str = " fifth";
+
+	}
+
+	else if (id_name.search("5") != -1)
+
+	{
+
+		str = " sixth";
+
+	}
+
+	else if (id_name.search("6") != -1)
+
+	{
+
+		str = " seventh";
+
+	}
+
+	else if (id_name.search("7") != -1)
+
+	{
+
+		str = " eighth";
+
+	}
+
+	else if (id_name.search("8") != -1)
+
+	{
+
+		str = " ninth";
+
+	}
+
+	else {
+
+		str = " tenth";
+
+	}
+
+	return document.getElementsByClassName(str);
+
+}
+
+</script>
+
+ 
+
+</html>
